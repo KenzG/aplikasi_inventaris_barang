@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "730671466748",
+    "project_id": "test-app-9cf84",
+    "storage_bucket": "test-app-9cf84.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:730671466748:android:b8cf73d436dcdba577ef79",
+        "android_client_info": {
+          "package_name": "edu.praktis.org.newtestapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDaHf_ISWtVTfhubb52Z8CMvO778Z_Hkx4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

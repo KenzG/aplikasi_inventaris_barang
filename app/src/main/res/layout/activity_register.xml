@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center"
+    tools:context="edu.praktis.org.newtestapp.RegisterActivity">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Registrasi Akun Baru"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="32dp"/>
+
+    <EditText
+        android:id="@+id/etEmailRegister"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Email"
+        android:inputType="textEmailAddress"
+        android:background="@drawable/edit_text_background"
+        android:padding="12dp"
+        android:layout_marginBottom="16dp"/>
+
+    <EditText
+        android:id="@+id/etPasswordRegister"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Password (min. 6 karakter)"
+        android:inputType="textPassword"
+        android:background="@drawable/edit_text_background"
+        android:padding="12dp"
+        android:layout_marginBottom="24dp"/>
+
+    <Button
+        android:id="@+id/btnRegister"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Register"
+        android:backgroundTint="@color/black"
+        android:padding="12dp"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:id="@+id/tvGoToLogin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Sudah punya akun? Login di sini"
+        android:textColor="@color/black"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="8dp"/>
+</LinearLayout>
