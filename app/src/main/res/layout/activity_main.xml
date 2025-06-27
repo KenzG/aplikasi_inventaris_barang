@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="24dp"
+    android:background="@color/white"
     tools:context="edu.praktis.org.newtestapp.MainActivity">
 
     <LinearLayout
@@ -52,6 +53,7 @@
             android:id="@+id/btnUpdateName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:backgroundTint="@color/black"
             android:text="Update Nama"
             android:padding="12dp"/>
     </LinearLayout>
@@ -60,6 +62,7 @@
         android:id="@+id/btnLogout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:backgroundTint="@color/black"
         android:text="Logout"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"

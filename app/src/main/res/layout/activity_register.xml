@@ -14,27 +14,32 @@
         android:text="Registrasi Akun Baru"
         android:textSize="24sp"
         android:textStyle="bold"
-        android:layout_marginBottom="32dp"/>
+        android:layout_marginBottom="32dp"
+        tools:ignore="HardcodedText" />
 
     <EditText
         android:id="@+id/etEmailRegister"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:autofillHints=""
         android:hint="Email"
         android:inputType="textEmailAddress"
         android:background="@drawable/edit_text_background"
         android:padding="12dp"
-        android:layout_marginBottom="16dp"/>
+        android:layout_marginBottom="16dp"
+        tools:ignore="HardcodedText" />
 
     <EditText
         android:id="@+id/etPasswordRegister"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:autofillHints=""
         android:hint="Password (min. 6 karakter)"
         android:inputType="textPassword"
         android:background="@drawable/edit_text_background"
         android:padding="12dp"
-        android:layout_marginBottom="24dp"/>
+        android:layout_marginBottom="24dp"
+        tools:ignore="HardcodedText" />
 
     <Button
         android:id="@+id/btnRegister"
@@ -43,7 +48,8 @@
         android:text="Register"
         android:backgroundTint="@color/black"
         android:padding="12dp"
-        android:layout_marginBottom="16dp"/>
+        android:layout_marginBottom="16dp"
+        tools:ignore="HardcodedText" />
 
     <TextView
         android:id="@+id/tvGoToLogin"
@@ -53,5 +59,6 @@
         android:textColor="@color/black"
         android:clickable="true"
         android:focusable="true"
-        android:padding="8dp"/>
+        android:padding="8dp"
+        tools:ignore="HardcodedText" />
 </LinearLayout>

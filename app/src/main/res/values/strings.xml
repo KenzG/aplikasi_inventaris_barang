@@ -5,6 +5,7 @@
     <string name="password_hint">Password</string>
 
     <string name="login_button_text">Login</string>
+    <string name="register_title">Registrasi Akun Baru</string>
 
     <string name="login_illustration_desc">Ilustrasi untuk halaman login</string>
 
