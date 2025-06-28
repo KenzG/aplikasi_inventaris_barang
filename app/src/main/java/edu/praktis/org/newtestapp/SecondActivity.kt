@@ -3,20 +3,17 @@ package edu.praktis.org.newtestapp
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.PopupMenu // Import PopupMenu
-import androidx.cardview.widget.CardView
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import android.util.Log
-import android.view.View // Import View untuk anchor PopupMenu
-import android.widget.ImageView // Import ImageView
+import android.view.View
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.PopupMenu
+import androidx.cardview.widget.CardView
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -26,10 +23,17 @@ import com.google.firebase.ktx.Firebase
 
 class SecondActivity : AppCompatActivity() {
 
+    // --- DEKLARASI ---
     private lateinit var recyclerViewBarang: RecyclerView
     private lateinit var textViewGreeting: TextView
+    private lateinit var imageViewAvatar: ImageView
+
     private lateinit var cardTotalItems: CardView
-    private lateinit var imageViewAvatar: ImageView // Deklarasi untuk ikon user/avatar
+    private lateinit var cardIncomingStock: CardView
+    private lateinit var cardOutOfStock: CardView
+    private lateinit var tvTotalItemsCount: TextView
+    private lateinit var tvIncomingStockCount: TextView
+    private lateinit var tvOutOfStockCount: TextView
 
     private lateinit var auth: FirebaseAuth
     private lateinit var db: FirebaseFirestore
@@ -40,13 +44,11 @@ class SecondActivity : AppCompatActivity() {
     private val TAG = "SecondActivity"
 
     private val allItemsLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        Log.d(TAG, "Kembali dari AllItemsActivity. Memuat ulang recent items.")
-        loadRecentItemsFromRepository()
+        Log.d(TAG, "Kembali dari AllItemsActivity.")
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_second)
 
         auth = Firebase.auth
@@ -59,16 +61,16 @@ class SecondActivity : AppCompatActivity() {
             return
         }
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
-
+        // --- INISIALISASI VIEW ---
         recyclerViewBarang = findViewById(R.id.recyclerViewRecentItems)
         textViewGreeting = findViewById(R.id.textViewGreeting)
+        imageViewAvatar = findViewById(R.id.imageView3)
         cardTotalItems = findViewById(R.id.cardTotalItems)
-        imageViewAvatar = findViewById(R.id.imageView3) // Inisialisasi ImageView avatar dengan ID yang benar
+        cardIncomingStock = findViewById(R.id.cardIncomingStock)
+        cardOutOfStock = findViewById(R.id.cardOutOfStock)
+        tvTotalItemsCount = findViewById(R.id.textViewTotalItemsCount)
+        tvIncomingStockCount = findViewById(R.id.textViewIncomingStockCount)
+        tvOutOfStockCount = findViewById(R.id.textViewOutOfStockCount)
 
         loadAndDisplayUserProfile()
         setupRecyclerView()
@@ -77,35 +79,68 @@ class SecondActivity : AppCompatActivity() {
             BarangRepository.loadDummyItemsIfNeeded()
         }
 
-        cardTotalItems.setOnClickListener {
-            Log.d(TAG, "CardView Total Items diklik. Membuka AllItemsActivity.")
-            val intent = Intent(this, AllItemsActivity::class.java)
-            allItemsLauncher.launch(intent)
-        }
-
-        // Menambahkan OnClickListener untuk ikon avatar/user
-        imageViewAvatar.setOnClickListener { view ->
-            Log.d(TAG, "Ikon Avatar diklik.")
-            showUserPopupMenu(view) // Panggil fungsi untuk menampilkan popup menu
-        }
+        setupClickListeners()
 
         Log.d(TAG, "SecondActivity berhasil dibuat.")
     }
 
     override fun onResume() {
         super.onResume()
-        Log.d(TAG, "SecondActivity onResume, memuat ulang recent items.")
+        Log.d(TAG, "SecondActivity onResume, memuat ulang data.")
         loadRecentItemsFromRepository()
+        updateStockCounts()
+    }
+
+    // --- FUNGSI-FUNGSI ---
+
+    private fun updateStockCounts() {
+        val allItems = BarangRepository.getAllItems()
+
+        val totalCount = allItems.size
+        val incomingCount = allItems.count { it.status == Status_Barang.Akan_Datang }
+        val outOfStockCount = allItems.count { it.stok == 0 }
+
+        tvTotalItemsCount.text = totalCount.toString()
+        tvIncomingStockCount.text = incomingCount.toString()
+        tvOutOfStockCount.text = outOfStockCount.toString()
+
+        Log.d(TAG, "Jumlah stok diperbarui: Total=$totalCount, Incoming=$incomingCount, OutOfStock=$outOfStockCount")
+    }
+
+    private fun setupClickListeners() {
+        cardTotalItems.setOnClickListener {
+            Log.d(TAG, "CardView Total Items diklik. Membuka AllItemsActivity.")
+            val intent = Intent(this, AllItemsActivity::class.java)
+            allItemsLauncher.launch(intent)
+        }
+
+        imageViewAvatar.setOnClickListener { view ->
+            Log.d(TAG, "Ikon Avatar diklik.")
+            showUserPopupMenu(view)
+        }
+
+        cardIncomingStock.setOnClickListener {
+            Log.d(TAG, "CardView Incoming Stock diklik.")
+            val intent = Intent(this, DetailStokActivity::class.java)
+            intent.putExtra("TIPE_STATUS", "AKAN_DATANG")
+            startActivity(intent)
+        }
+
+        cardOutOfStock.setOnClickListener {
+            Log.d(TAG, "CardView Out of Stock diklik.")
+            val intent = Intent(this, DetailStokActivity::class.java)
+            intent.putExtra("TIPE_STATUS", "HABIS")
+            startActivity(intent)
+        }
     }
 
     private fun showUserPopupMenu(anchorView: View) {
         val popupMenu = PopupMenu(this, anchorView)
-        popupMenu.menuInflater.inflate(R.menu.menu_user_options, popupMenu.menu) // Anda perlu membuat file menu_user_options.xml
+        popupMenu.menuInflater.inflate(R.menu.menu_user_options, popupMenu.menu)
 
         popupMenu.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.action_view_profile -> {
-                    // TODO: Implementasi navigasi ke halaman View Profile
                     Toast.makeText(this, "View Profile diklik (belum diimplementasikan)", Toast.LENGTH_SHORT).show()
                     Log.d(TAG, "Menu item View Profile diklik.")
                     true
@@ -113,12 +148,12 @@ class SecondActivity : AppCompatActivity() {
                 R.id.action_log_out -> {
                     Log.d(TAG, "Menu item Log Out diklik.")
                     auth.signOut()
-                    BarangRepository.clearAllItems() // Opsional: Bersihkan data lokal saat logout
+                    BarangRepository.clearAllItems()
                     Toast.makeText(this, "Logout berhasil", Toast.LENGTH_SHORT).show()
                     val intent = Intent(this, LoginActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Membersihkan back stack
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                     startActivity(intent)
-                    finish() // Tutup SecondActivity
+                    finish()
                     true
                 }
                 else -> false
@@ -151,7 +186,6 @@ class SecondActivity : AppCompatActivity() {
                 }
                 .addOnFailureListener { exception ->
                     Log.e(TAG, "Gagal memuat data profil untuk UID: $userId", exception)
-                    // Toast.makeText(this, "Gagal memuat data profil.", Toast.LENGTH_SHORT).show() // Mungkin terlalu mengganggu jika sering gagal
                     val fallbackName = firebaseUser.email?.substringBefore('@')?.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() } ?: "User"
                     textViewGreeting.text = "Hi, $fallbackName!"
                 }

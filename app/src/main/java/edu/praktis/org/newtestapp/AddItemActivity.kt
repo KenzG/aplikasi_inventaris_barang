@@ -16,47 +16,37 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.bumptech.glide.Glide
+import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.android.material.textfield.TextInputEditText
-// import com.google.firebase.firestore.FirebaseFirestore
-// import com.google.firebase.firestore.ktx.firestore
-// import com.google.firebase.ktx.Firebase
-// import com.google.firebase.storage.FirebaseStorage
-// import com.google.firebase.storage.ktx.storage
-import java.util.UUID // Untuk generate ID lokal
+import java.util.UUID
 
 class AddItemActivity : AppCompatActivity() {
 
+    // --- DEKLARASI VIEW ---
     private lateinit var editTextItemName: TextInputEditText
-    private lateinit var editTextItemSize: TextInputEditText // Diaktifkan kembali
+    private lateinit var editTextItemSize: TextInputEditText
     private lateinit var editTextItemPrice: TextInputEditText
-    private lateinit var editTextItemQuantity: TextInputEditText // Ini akan digunakan untuk field 'stok'
+    private lateinit var editTextItemQuantity: TextInputEditText
     private lateinit var imageViewUploadPlaceholder: ImageView
     private lateinit var buttonSubmitItem: Button
+    private lateinit var switchIncoming: SwitchMaterial // <-- DEKLARASI BARU
 
-    // private lateinit var db: FirebaseFirestore // Firebase dinonaktifkan
-    // private lateinit var storage: FirebaseStorage // Firebase dinonaktifkan
     private var imageUri: Uri? = null
+    private var isEditMode = false
+    private var editBarangId: String? = null
+    private var existingBarang: Barang? = null
 
     private val TAG = "AddItemActivity"
 
-    // Companion object untuk konstanta yang bisa diakses dari luar
     companion object {
-        const val EXTRA_NEW_BARANG = "extra_new_barang" // Key untuk mengirim/menerima data Barang
-        // const val EXTRA_IS_EDIT_MODE = "extra_is_edit_mode" // Key untuk menandakan mode edit (opsional jika menggunakan EXTRA_NEW_BARANG)
-        // const val EXTRA_EDIT_BARANG_ID = "extra_edit_barang_id" // Key untuk ID barang yang diedit (opsional jika mengirim seluruh objek)
+        const val EXTRA_NEW_BARANG = "extra_new_barang"
     }
 
-    private var isEditMode = false
-    private var editBarangId: String? = null // Akan diisi dari existingBarang.id
-    private var existingBarang: Barang? = null
-
-
-    // ActivityResultLauncher untuk memilih gambar
     private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             result.data?.data?.let {
                 imageUri = it
-                imageViewUploadPlaceholder.setImageURI(imageUri) // Tampilkan gambar yang dipilih
+                imageViewUploadPlaceholder.setImageURI(imageUri)
                 Log.d(TAG, "Gambar dipilih: $imageUri")
             }
         }
@@ -65,7 +55,6 @@ class AddItemActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        // Pastikan layout yang digunakan adalah activity_add_item.xml yang sudah diupdate (dengan field size)
         setContentView(R.layout.activity_add_item)
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -74,39 +63,39 @@ class AddItemActivity : AppCompatActivity() {
             insets
         }
 
-        // Inisialisasi Views
+        // --- INISIALISASI VIEW ---
         editTextItemName = findViewById(R.id.editTextItemName)
-        editTextItemSize = findViewById(R.id.editTextItemSize) // Inisialisasi editTextItemSize
+        editTextItemSize = findViewById(R.id.editTextItemSize)
         editTextItemPrice = findViewById(R.id.editTextItemPrice)
-        editTextItemQuantity = findViewById(R.id.editTextItemQuantity) // Ini untuk stok
+        editTextItemQuantity = findViewById(R.id.editTextItemQuantity)
         imageViewUploadPlaceholder = findViewById(R.id.imageViewUploadPlaceholder)
         buttonSubmitItem = findViewById(R.id.buttonSubmitItem)
+        switchIncoming = findViewById(R.id.switchIncoming) // <-- INISIALISASI BARU
 
-
+        // Cek mode Edit atau Tambah
         if (intent.hasExtra(EXTRA_NEW_BARANG)) {
             isEditMode = true
-            existingBarang = intent.getParcelableExtra(EXTRA_NEW_BARANG) // Ambil objek Barang yang akan diedit
-            editBarangId = existingBarang?.id // Ambil ID dari objek Barang yang ada
+            existingBarang = intent.getParcelableExtra(EXTRA_NEW_BARANG)
+            editBarangId = existingBarang?.id
             Log.d(TAG, "Mode Edit untuk barang ID: $editBarangId, Data: $existingBarang")
             populateFieldsForEdit()
-            findViewById<TextView>(R.id.textViewAddItemTitle).text = "Edit Item" // Ubah judul halaman
-            buttonSubmitItem.text = "Update Item" // Ubah teks tombol
+            findViewById<TextView>(R.id.textViewAddItemTitle).text = "Edit Item"
+            buttonSubmitItem.text = "Update Item"
         } else {
             Log.d(TAG, "Mode Tambah Item Baru.")
             findViewById<TextView>(R.id.textViewAddItemTitle).text = "Add Item"
             buttonSubmitItem.text = "Submit"
         }
 
-
         imageViewUploadPlaceholder.setOnClickListener {
             Log.d(TAG, "ImageView untuk upload gambar diklik.")
-            // Intent untuk memilih gambar dari galeri
             val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
             pickImageLauncher.launch(intent)
         }
 
         buttonSubmitItem.setOnClickListener {
             Log.d(TAG, "Tombol Submit/Update Item diklik.")
+            // Logika digabung ke fungsi masing-masing untuk kejelasan
             if (isEditMode) {
                 updateExistingItemInRepository()
             } else {
@@ -122,21 +111,23 @@ class AddItemActivity : AppCompatActivity() {
             editTextItemSize.setText(barang.size)
             editTextItemPrice.setText(barang.harga.toString())
             editTextItemQuantity.setText(barang.stok.toString())
+            // MODIFIKASI: Atur switch sesuai status barang
+            switchIncoming.isChecked = barang.status == Status_Barang.Akan_Datang
+            
             if (!barang.imageUrl.isNullOrEmpty()) {
                 try {
-                    imageUri = Uri.parse(barang.imageUrl) // Simpan URI gambar yang ada
+                    imageUri = Uri.parse(barang.imageUrl)
                     Glide.with(this)
                         .load(barang.imageUrl)
-                        .placeholder(R.mipmap.ic_launcher_round) // Placeholder jika ada
-                        .error(R.drawable.broken_image) // Gambar jika error (pastikan drawable ini ada)
+                        .placeholder(R.mipmap.ic_launcher_round)
+                        .error(R.drawable.broken_image)
                         .into(imageViewUploadPlaceholder)
                 } catch (e: Exception) {
                     Log.e(TAG, "Error memuat gambar untuk edit: ${barang.imageUrl}", e)
-                    imageViewUploadPlaceholder.setImageResource(R.drawable.broken_image) // Tampilkan gambar error
+                    imageViewUploadPlaceholder.setImageResource(R.drawable.broken_image)
                 }
             } else {
-                // Jika tidak ada imageUrl, tampilkan placeholder default atau biarkan kosong
-                imageViewUploadPlaceholder.setImageResource(R.drawable.image) // Ganti dengan placeholder yang sesuai
+                imageViewUploadPlaceholder.setImageResource(R.drawable.image)
             }
         }
     }
@@ -149,8 +140,16 @@ class AddItemActivity : AppCompatActivity() {
 
         if (!validateInputs(nama, size, hargaString, kuantitasString)) return
 
-        val harga = hargaString.toDouble() // Sudah divalidasi di validateInputs
-        val stok = kuantitasString.toInt()   // Sudah divalidasi di validateInputs
+        val harga = hargaString.toDouble()
+        val stok = kuantitasString.toInt()
+
+        // MODIFIKASI: Tentukan status barang baru
+        val status = when {
+            switchIncoming.isChecked -> Status_Barang.Akan_Datang
+            stok > 0 -> Status_Barang.Tersedia
+            else -> Status_Barang.Habis
+        }
+        Log.d(TAG, "Status barang baru ditentukan sebagai: $status")
 
         val newBarang = Barang(
             id = UUID.randomUUID().toString(),
@@ -158,7 +157,8 @@ class AddItemActivity : AppCompatActivity() {
             size = size,
             harga = harga,
             stok = stok,
-            imageUrl = imageUri?.toString()
+            imageUrl = imageUri?.toString(),
+            status = status // <-- Masukkan status ke objek
         )
 
         BarangRepository.addItem(newBarang)
@@ -177,8 +177,8 @@ class AddItemActivity : AppCompatActivity() {
 
         if (!validateInputs(nama, size, hargaString, kuantitasString)) return
 
-        val harga = hargaString.toDouble() // Sudah divalidasi
-        val stok = kuantitasString.toInt()   // Sudah divalidasi
+        val harga = hargaString.toDouble()
+        val stok = kuantitasString.toInt()
 
         if (editBarangId == null) {
             Log.e(TAG, "Tidak ada ID barang untuk diupdate.")
@@ -186,17 +186,24 @@ class AddItemActivity : AppCompatActivity() {
             return
         }
 
-        // Jika gambar tidak diubah, gunakan imageUrl yang lama dari existingBarang.
-        // Jika gambar diubah (imageUri tidak null), gunakan imageUri yang baru.
+        // MODIFIKASI: Tentukan status barang yang diedit
+        val status = when {
+            switchIncoming.isChecked -> Status_Barang.Akan_Datang
+            stok > 0 -> Status_Barang.Tersedia
+            else -> Status_Barang.Habis
+        }
+        Log.d(TAG, "Status barang yang diupdate ditentukan sebagai: $status")
+
         val finalImageUrl = imageUri?.toString() ?: existingBarang?.imageUrl
 
         val updatedBarang = Barang(
-            id = editBarangId!!, // Gunakan ID yang sudah ada
+            id = editBarangId!!,
             nama = nama,
             size = size,
             harga = harga,
             stok = stok,
-            imageUrl = finalImageUrl
+            imageUrl = finalImageUrl,
+            status = status // <-- Masukkan status ke objek
         )
 
         val success = BarangRepository.updateItem(updatedBarang)
@@ -205,7 +212,6 @@ class AddItemActivity : AppCompatActivity() {
             Toast.makeText(this, "${updatedBarang.nama} berhasil diperbarui!", Toast.LENGTH_SHORT).show()
 
             val resultIntent = Intent()
-            // Kirim barang yang sudah diedit kembali agar ItemDetailActivity bisa memperbarui tampilannya jika perlu
             resultIntent.putExtra(EXTRA_NEW_BARANG, updatedBarang)
             setResult(Activity.RESULT_OK, resultIntent)
             finish()
@@ -226,24 +232,12 @@ class AddItemActivity : AppCompatActivity() {
             requestFocusOnError(editTextItemSize)
             return false
         }
-        if (hargaString.isEmpty()) {
-            editTextItemPrice.error = "Harga tidak boleh kosong"
-            requestFocusOnError(editTextItemPrice)
-            return false
-        }
-        val harga = hargaString.toDoubleOrNull()
-        if (harga == null || harga <= 0) {
+        if (hargaString.isEmpty() || hargaString.toDoubleOrNull() == null || hargaString.toDouble() <= 0) {
             editTextItemPrice.error = "Harga tidak valid"
             requestFocusOnError(editTextItemPrice)
             return false
         }
-        if (kuantitasString.isEmpty()) {
-            editTextItemQuantity.error = "Kuantitas (stok) tidak boleh kosong"
-            requestFocusOnError(editTextItemQuantity)
-            return false
-        }
-        val stok = kuantitasString.toIntOrNull()
-        if (stok == null || stok < 0) {
+        if (kuantitasString.isEmpty() || kuantitasString.toIntOrNull() == null || kuantitasString.toInt() < 0) {
             editTextItemQuantity.error = "Kuantitas (stok) tidak valid"
             requestFocusOnError(editTextItemQuantity)
             return false

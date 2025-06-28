@@ -32,9 +32,9 @@ object BarangRepository {
         if (daftarBarangInternal.isEmpty()) {
             Log.d(TAG, "Repository kosong, memuat data barang dummy...")
             val items = listOf(
-                Barang(id = "DUMMY001", nama = "Nike Dunk Low Retro SE", size = "43", harga = 1500000.0, stok = 10, imageUrl = null),
-                Barang(id = "DUMMY002", nama = "Nike Dunk Low Unlocked", size = "43", harga = 2500000.0, stok = 5, imageUrl = null),
-                Barang(id = "DUMMY003", nama = "Nike Air Force 1 Mid", size = "40", harga = 2000000.0, stok = 15, imageUrl = null)
+                Barang(id = "DUMMY001", nama = "Nike Dunk Low Retro SE", size = "43", harga = 1500000.0, stok = 10, imageUrl = null, status = Status_Barang.Akan_Datang),
+                Barang(id = "DUMMY002", nama = "Nike Dunk Low Unlocked", size = "43", harga = 2500000.0, stok = 5, imageUrl = null, status = Status_Barang.Habis),
+                Barang(id = "DUMMY003", nama = "Nike Air Force 1 Mid", size = "40", harga = 2000000.0, stok = 15, imageUrl = null, status = Status_Barang.Akan_Datang)
             )
             daftarBarangInternal.addAll(items)
             Log.d(TAG, "Data barang dummy dimuat ke repository: ${daftarBarangInternal.size} item.")
