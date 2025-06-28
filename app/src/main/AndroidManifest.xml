@@ -61,6 +61,11 @@
             android:exported="false"
             android:label="Item Detail" />
 
+        <activity
+            android:name=".DetailStokActivity"
+            android:exported="false"
+            android:label="Detail Stok" />
+
     </application>
 
 </manifest>

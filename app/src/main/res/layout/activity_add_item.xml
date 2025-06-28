@@ -92,6 +92,17 @@
             android:maxLines="1"/>
     </com.google.android.material.textfield.TextInputLayout>
 
+    <com.google.android.material.switchmaterial.SwitchMaterial
+    android:id="@+id/switchIncoming"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="16dp"
+    android:text="Tandai sebagai 'Akan Datang' (Incoming)"
+    android:textSize="16sp"
+    app:layout_constraintTop_toBottomOf="@+id/textFieldItemQuantity"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toEndOf="parent" />
+
     <TextView
         android:id="@+id/textViewUploadImageLabel"
         android:layout_width="wrap_content"
